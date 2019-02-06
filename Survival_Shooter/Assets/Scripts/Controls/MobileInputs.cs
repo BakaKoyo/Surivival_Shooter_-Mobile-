@@ -15,13 +15,14 @@ public class MobileInputs : MonoBehaviour
     float fingerDownPosX;
     int fingerDownIndex = -1;
 
+    int BulletCD = 2;
+    int CurrentCD = 0;
+    bool CanShoot = false;
+
     void Update()
     {
 
-        if(Input.GetMouseButtonDown(0))
-        {
-            ShootProjectile();
-        }
+        CurrentCD++;
 
         /* Check for presses, however setup Listener 
            events (more advanced) for pressed */
@@ -31,7 +32,7 @@ public class MobileInputs : MonoBehaviour
 
     public void PlayerRotation(Vector2 rot)
     {
-        transform.Rotate(rot, Space.World);
+        transform.Rotate(rot, Space.Self);
     }
 
     void OnTouch()
@@ -71,7 +72,16 @@ public class MobileInputs : MonoBehaviour
         /* Any finger can register the attack -- leave outside of is finger down check */
         GameManager.Instance.Player.HitCheck(touch.position);
 
-        ShootProjectile();
+        if (CurrentCD >= BulletCD)
+        {
+            CanShoot = true;
+            CurrentCD = 0;
+        }
+
+        if (CanShoot == true)
+        {
+            ShootProjectile();
+        }
 
         if (isFingerDown == false)
         {
@@ -87,7 +97,8 @@ public class MobileInputs : MonoBehaviour
 
     void OnTouchEnded(int Index)
     {
-        if(Index == fingerDownIndex)
+
+        if (Index == fingerDownIndex)
         {
             /* Set it to a number that is not in the touch index array (0+) */
             fingerDownIndex = -1;
@@ -119,6 +130,8 @@ public class MobileInputs : MonoBehaviour
 
         //This line applies velocity in the direction where the spawn point is facing
         _bullet.GetComponent<Rigidbody>().velocity = bulletSpawnPoint.forward;
+
+        CanShoot = false;
     }
 
 }
